@@ -411,7 +411,7 @@ export default function Home() {
                 name: "Sarah Johnson",
                 role: "CrossFit Member",
                 quote: "I've lost 25lbs and gained so much confidence! The trainers are amazing.",
-                image: "/member1.jpg"
+                image: "/number1.jpeg"
               },
               {
                 name: "Michael Chen",
@@ -423,7 +423,7 @@ export default function Home() {
                 name: "Emma Rodriguez",
                 role: "Yoga Member",
                 quote: "Not just a gym, but a lifestyle change. I'm in the best shape of my life.",
-                image: "/member3.jpg"
+                image: "/member3.jpeg"
               }
             ].map((testimonial, index) => (
               <motion.div
@@ -449,7 +449,7 @@ export default function Home() {
                     <p className="text-amber-600 text-sm">{testimonial.role}</p>
                   </div>
                 </div>
-                <p className="text-gray-600 italic">"{testimonial.quote}"</p>
+                <p className="text-gray-600 italic">&quot;{testimonial.quote}&quot;</p>
               </motion.div>
             ))}
           </div>
