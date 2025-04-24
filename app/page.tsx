@@ -2,22 +2,112 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaDumbbell, FaHeartbeat, FaRunning, FaCalendarAlt, FaArrowRight, FaBars, FaTimes } from "react-icons/fa";
 import { IoIosFitness } from "react-icons/io";
 import { GiMuscleUp } from "react-icons/gi";
+import Gallery from "./components/gallery";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
+
+  // Refs for each section
+  const homeRef = useRef<HTMLElement>(null);
+  const featuresRef = useRef<HTMLElement>(null);
+  const classesRef = useRef<HTMLElement>(null);
+  const pricingRef = useRef<HTMLElement>(null);
+  const testimonialsRef = useRef<HTMLElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
+  const galleryRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
+
+      // Determine active section based on scroll position
+      const sections = [
+        { id: 'home', ref: homeRef },
+        { id: 'features', ref: featuresRef },
+        { id: 'classes', ref: classesRef },
+        { id: 'gallery', ref: galleryRef },
+        { id: 'pricing', ref: pricingRef },
+        { id: 'testimonials', ref: testimonialsRef },
+        { id: 'contact', ref: contactRef }
+      ];
+
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        const element = section.ref.current;
+        if (element) {
+          const offsetTop = element.offsetTop;
+          const offsetHeight = element.offsetHeight;
+
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(section.id);
+            break;
+          }
+        }
+      }
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const scrollToSection = (sectionId: string) => {
+    let element: HTMLElement | null = null;
+
+    switch (sectionId) {
+      case 'home': element = homeRef.current; break;
+      case 'features': element = featuresRef.current; break;
+      case 'classes': element = classesRef.current; break;
+      case 'gallery': element = galleryRef.current; break;
+      case 'pricing': element = pricingRef.current; break;
+      case 'testimonials': element = testimonialsRef.current; break;
+      case 'contact': element = contactRef.current; break;
+    }
+
+    if (element) {
+      window.scrollTo({
+        top: element.offsetTop - 80,
+        behavior: 'smooth'
+      });
+      setActiveSection(sectionId);
+      setIsMenuOpen(false);
+    }
+  };
+
+  const handleJoinNow = () => {
+    scrollToSection('pricing');
+  };
+
+  const handleGetStarted = () => {
+    scrollToSection('pricing');
+  };
+
+  const handleExploreClasses = () => {
+    scrollToSection('classes');
+  };
+
+  const handleViewSchedule = () => {
+    // In a real app, this would link to a schedule page or open a modal
+    alert('Schedule view would open here');
+  };
+
+  const handleClaimTrial = () => {
+    // In a real app, this would submit the form
+    alert('Free trial claimed! We will contact you shortly.');
+  };
+
+  const handleJoinToday = () => {
+    scrollToSection('pricing');
+  };
+
+
+  
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans overflow-x-hidden">
@@ -32,6 +122,7 @@ export default function Home() {
           <motion.div
             whileHover={{ scale: 1.05 }}
             className="flex items-center gap-2"
+            onClick={() => scrollToSection('home')}
           >
             <Image
               src="/gym.png"
@@ -44,22 +135,30 @@ export default function Home() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-8 items-center">
-            {['Home', 'Classes', 'Trainers', 'Pricing', 'Contact'].map((item, index) => (
-              <motion.a
-                key={item}
-                href="#"
-                whileHover={{ color: '#f59e0b', y: -2 }}
-                transition={{ duration: 0.2 }}
-                className="font-medium text-gray-700 hover:text-amber-500 transition-colors"
-                style={{ transitionDelay: `${index * 0.1}s` }}
-              >
-                {item}
-              </motion.a>
+            {[
+            {id: 'home', name: 'Home' },
+            {id: 'features', name: 'Features' },
+            {id: 'classes', name: 'Classes' },
+            {id: 'gallery', name: 'Gallery' },
+            {id: 'pricing', name: 'Pricing' },
+            {id: 'testimonials', name: 'Testimonials' },
+            {id: 'contact', name: 'Contact' }
+            ].map((item) => (
+            <motion.button
+              key={item.id}
+              onClick={() => scrollToSection(item.id)}
+              whileHover={{ color: '#f59e0b', y: -2 }}
+              transition={{ duration: 0.2 }}
+              className={`font-medium ${activeSection === item.id ? 'text-amber-500' : 'text-gray-700'} hover:text-amber-500 transition-colors`}
+            >
+              {item.name}
+            </motion.button>
             ))}
             <motion.button
               whileHover={{ scale: 1.05, backgroundColor: '#f59e0b' }}
               whileTap={{ scale: 0.95 }}
               className="bg-gray-900 text-white px-6 py-2 rounded-full font-medium"
+              onClick={handleJoinNow}
             >
               Join Now
             </motion.button>
@@ -80,24 +179,33 @@ export default function Home() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white px-6 pb-4"
+            className="md:hidden bg-white px-6 pb-4 shadow-lg"
           >
             <div className="flex flex-col gap-4">
-              {['Home', 'Classes', 'Trainers', 'Pricing', 'Contact'].map((item) => (
-                <motion.a
-                  key={item}
-                  href="#"
+              {[
+                { id: 'home', name: 'Home' },
+                { id: 'features', name: 'Features' },
+                { id: 'classes', name: 'Classes' },
+                { id: 'gallery', name: 'Gallery' },
+                { id: 'pricing', name: 'Pricing' },
+                { id: 'testimonials', name: 'Testimonials' },
+                { id: 'contact', name: 'Contact' }
+              ].map((item) => (
+                <motion.button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
                   whileHover={{ color: '#f59e0b', x: 5 }}
-                  className="font-medium text-gray-700 py-2 border-b border-gray-100"
-                  onClick={() => setIsMenuOpen(false)}
+                  className={`font-medium text-left ${activeSection === item.id ? 'text-amber-500' : 'text-gray-700'} py-2 border-b border-gray-100`}
                 >
-                  {item}
-                </motion.a>
+                  {item.name}
+                </motion.button>
               ))}
+
               <motion.button
                 whileHover={{ scale: 1.02, backgroundColor: '#f59e0b' }}
                 whileTap={{ scale: 0.98 }}
                 className="bg-gray-900 text-white px-6 py-3 rounded-full font-medium mt-2"
+                onClick={handleJoinNow}
               >
                 Join Now
               </motion.button>
@@ -107,7 +215,7 @@ export default function Home() {
       </motion.header>
 
       {/* Hero Section with Image Background */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section ref={homeRef} className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <Image
             src="/gym1.jpg" // Replace with your image path
@@ -150,6 +258,7 @@ export default function Home() {
               whileHover={{ scale: 1.05, boxShadow: '0 5px 15px rgba(245, 158, 11, 0.4)' }}
               whileTap={{ scale: 0.95 }}
               className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-full text-lg transition-all"
+              onClick={handleGetStarted}
             >
               GET STARTED TODAY
             </motion.button>
@@ -160,6 +269,7 @@ export default function Home() {
               whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.2)' }}
               whileTap={{ scale: 0.95 }}
               className="border-2 border-white hover:bg-white/10 text-white font-bold py-4 px-8 rounded-full text-lg transition-all"
+              onClick={handleExploreClasses}
             >
               EXPLORE CLASSES
             </motion.button>
@@ -170,13 +280,14 @@ export default function Home() {
           animate={{ y: [0, 15, 0] }}
           transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
           className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10"
+          onClick={() => scrollToSection('features')}
         >
           <FaArrowRight className="rotate-90 text-3xl text-amber-400" />
         </motion.div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 max-w-7xl mx-auto bg-white">
+      <section ref={featuresRef} className="py-20 px-6 max-w-7xl mx-auto bg-white">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -239,7 +350,7 @@ export default function Home() {
       </section>
 
       {/* Classes Section */}
-      <section className="py-20 bg-gray-50 px-6">
+      <section ref={classesRef} className="py-20 bg-gray-50 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
@@ -307,6 +418,7 @@ export default function Home() {
                     whileHover={{ x: 5 }}
                     whileTap={{ scale: 0.95 }}
                     className="text-amber-400 font-bold flex items-center gap-2 group-hover:text-amber-300 transition-all"
+                    onClick={handleViewSchedule}
                   >
                     VIEW SCHEDULE <FaCalendarAlt />
                   </motion.button>
@@ -318,7 +430,7 @@ export default function Home() {
       </section>
 
       {/* Membership CTA */}
-      <section className="py-20 px-6 bg-gradient-to-r from-gray-900 to-gray-800">
+      <section ref={pricingRef} className="py-20 px-6 bg-gradient-to-r from-gray-900 to-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             <motion.div
@@ -380,6 +492,7 @@ export default function Home() {
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   className="w-full bg-gray-900 text-white py-4 rounded-lg font-bold"
+                  onClick={handleClaimTrial}
                 >
                   CLAIM FREE TRIAL
                 </motion.button>
@@ -389,8 +502,12 @@ export default function Home() {
         </div>
       </section>
 
+      <section ref={galleryRef}>
+        <Gallery />
+      </section>
+
       {/* Testimonials */}
-      <section className="py-20 px-6 bg-white">
+      <section ref={testimonialsRef} className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
@@ -487,6 +604,7 @@ export default function Home() {
               whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(0,0,0,0.3)" }}
               whileTap={{ scale: 0.95 }}
               className="bg-gray-900 text-white font-bold py-4 px-12 rounded-full text-lg"
+              onClick={handleJoinToday}
             >
               JOIN TODAY
             </motion.button>
@@ -495,12 +613,22 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 py-16 px-6 text-gray-300">
+      <footer ref={contactRef} className="bg-gray-900 py-16 px-6 text-gray-300">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-2xl font-bold mb-4 flex items-center gap-2 text-white">
-              <FaDumbbell className="text-amber-500" /> ELITE FIT
-            </h3>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-2"
+              onClick={() => scrollToSection('home')}
+            >
+              <Image
+                src="/gym.png"
+                alt="Elite Fit Logo"
+                width={100}
+                height={40}
+                className="object-contain"
+              />
+            </motion.div>
             <p className="mb-4">
               The premier fitness destination for those committed to excellence.
             </p>
